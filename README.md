@@ -4,6 +4,28 @@ A job application tracker with one-click capture from job postings —
 including LinkedIn — accounts, and a Postgres database via Supabase, ready
 to deploy on Vercel.
 
+## What it does
+
+- **Tracks applications** — company, title, job link, location, salary,
+  applied date, status, and notes, in a filterable/searchable dashboard.
+- **Status pipeline** — Saved → Applied → Interviewing → Offer / Rejected /
+  Withdrawn, changeable inline from the dashboard table.
+- **One-click capture from the browser** — the Chrome extension reads the
+  job posting on whatever page you're viewing (LinkedIn included) and
+  pre-fills a title/company/location for you to review and save.
+- **Paste-to-parse fallback** — for any site the extension can't read,
+  paste the job text into the dashboard and Jobly extracts what it can.
+- **Accounts** — email/password sign-up and sign-in via Supabase Auth.
+  Every application is private to the account that created it, enforced by
+  Postgres Row Level Security (not just app-level checks).
+- **Sign in from the extension itself** — the extension links to your
+  account by signing in with your email and password, the same as the
+  dashboard. No token to copy. (A personal API token is still available on
+  the Settings page as an advanced option for scripting against the API
+  directly.)
+- **Deployed on Vercel** — serverless-friendly since storage is Supabase's
+  hosted Postgres rather than a local file.
+
 ## Why not just fetch the URL automatically?
 
 Most job boards embed structured data (`JobPosting` JSON-LD) that a server
@@ -59,20 +81,23 @@ description for Jobly to auto-fill fields from.
 
 1. Go to `chrome://extensions`, enable **Developer mode**, click **Load
    unpacked**, and select the `extension/` folder.
-2. Sign in to your Jobly dashboard, open **Settings** (top of the dashboard),
-   and copy your personal API token.
-3. Click the Jobly icon in your toolbar → **Options**. Set:
-   - **Jobly URL** — `http://localhost:3000` for local use, or your deployed
-     URL.
-   - **Personal API token** — the value from step 2.
-4. Click **Test connection** to confirm it can reach your Jobly instance and
-   that the token is valid.
+2. Click the Jobly icon in your toolbar → **Options**. Set the **Jobly
+   URL** (`http://localhost:3000` for local use, or your deployed URL) and
+   click **Save URL**.
+3. Under **Sign in**, enter the same email and password you use on the
+   dashboard, and click **Sign in**. That's it — no token to find or paste.
+4. Click **Test connection** any time to confirm the extension can reach
+   Jobly and that your session is valid.
 
-Each person's token is private to their account — the extension identifies
-who a captured job belongs to by which token it sends, so there's no login
-UI needed inside the extension itself. If you ever suspect your token
-leaked, rotate it from the Settings page; the old one stops working
-immediately.
+The extension keeps you signed in the way any app does: it holds a session
+that refreshes itself automatically in the background, so you won't need to
+re-enter your password often. If you ever want to disconnect the extension
+from your account, open Options and click **Sign out** — this only affects
+this browser, your dashboard session elsewhere is untouched.
+
+Since jobs saved by the extension are tied to whoever is signed in, if you
+use Jobly on a shared or borrowed computer, sign out of the extension
+afterward the same way you'd sign out of any account.
 
 ### Using it
 
@@ -104,23 +129,61 @@ see the comments in `extension/content.js` for how.
 4. In Supabase, under **Authentication → URL Configuration**, add your
    Vercel deployment's URL as a **Redirect URL** (and as the **Site URL**)
    so auth emails link back to the right place.
-5. Update the extension's Options page with the deployed URL (your token
-   stays the same).
+5. Update the extension's Options page with the deployed URL and click
+   **Save URL** — your sign-in session carries over, no need to sign in
+   again unless you explicitly sign out.
+
+## Troubleshooting
+
+**"Internal Server Error" right after deploying, with a runtime log saying
+`Your project's URL and Key are required to create a Supabase client!`** —
+the three Supabase env vars aren't actually reaching the running app. Almost
+always one of:
+
+- The variables were saved in Vercel *after* the current deployment was
+  built. Saving an env var doesn't retroactively apply to a deployment
+  that's already running — go to **Deployments → (latest) → ⋯ →
+  Redeploy**.
+- The **Production** checkbox wasn't ticked for one of the variables when
+  it was added (they can be scoped per environment).
+- A stray character snuck into the value — e.g. pasting a value that still
+  has surrounding quotes (`"eyJ..."`) copied from a `.env` file. Vercel's
+  value field should hold just the raw key, no quotes around it.
+- A typo in the variable name — it must match exactly:
+  `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+  `SUPABASE_SERVICE_ROLE_KEY`.
+
+To see the real error for anything else that comes up: Vercel project →
+**Deployments** → click the deployment → **Runtime Logs**, then reproduce
+the failing request.
 
 ## API
 
-All routes except `/api/capture`, `/api/health`, and `/api/parse` require a
-signed-in session (cookie-based) and only ever return/modify the signed-in
-user's own rows.
+All routes except `/api/auth/*`, `/api/capture`, `/api/health`, and
+`/api/parse` require a signed-in session (cookie-based) and only ever
+return/modify the signed-in user's own rows.
 
 - `GET /api/jobs?status=&q=` — list applications
 - `POST /api/jobs` — create one manually `{ company, title, url, ... }`
 - `PATCH /api/jobs/:id` / `DELETE /api/jobs/:id`
 - `POST /api/capture` — used by the extension, requires
-  `Authorization: Bearer <personal token>`; dedupes on `url` per user
+  `Authorization: Bearer <token>`; dedupes on `url` per user. The bearer
+  token can be either a Supabase session access token (from
+  `/api/auth/signin`, what the extension uses) or a personal API token
+  (the advanced/scripting option) — both are checked.
 - `POST /api/parse` — best-effort field extraction from pasted `text` and/or
   `html`, used by the dashboard's paste flow
 - `GET /api/tokens` / `POST /api/tokens` — fetch or rotate your personal
-  token (used by the Settings page)
+  token (used by the Settings page's advanced section)
 - `GET /api/health` — reachability check, optionally validates a bearer
-  token; used by the extension's "Test connection" button
+  token (session or personal token); used by the extension's "Test
+  connection" button
+- `POST /api/auth/signin` — used by the extension's sign-in form; takes
+  `{ email, password }`, returns a Supabase session
+  (`accessToken`/`refreshToken`/`expiresAt`). This exists so the extension
+  can sign in directly without embedding the Supabase SDK — it only needs
+  to know your Jobly URL, same as everything else it talks to.
+- `POST /api/auth/refresh` — takes `{ refreshToken }`, returns a refreshed
+  session; the extension calls this automatically shortly before its
+  current access token expires (about once an hour), so you stay signed in
+  without re-entering your password.

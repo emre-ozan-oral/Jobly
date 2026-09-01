@@ -3,9 +3,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
  * Unauthenticated reachability + token check for the extension's "Test
- * connection" button. If a bearer token is sent, also reports whether it's
- * a valid personal token - this is the only endpoint that checks a token
- * without requiring it to actually create/update a job.
+ * connection" button. If a bearer token is sent, reports whether it's
+ * valid - either a Supabase session token (the extension's sign-in flow)
+ * or a personal API token - without requiring it to actually create or
+ * update a job.
  */
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization") || "";
@@ -14,6 +15,12 @@ export async function GET(req: NextRequest) {
   if (!token) return NextResponse.json({ ok: true, tokenValid: null });
 
   const admin = createAdminClient();
+
+  const { data: jwtUser } = await admin.auth.getUser(token);
+  if (jwtUser?.user) {
+    return NextResponse.json({ ok: true, tokenValid: true });
+  }
+
   const { data } = await admin
     .from("api_tokens")
     .select("user_id")

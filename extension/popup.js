@@ -7,13 +7,17 @@ function todayIso() {
 let currentUrl = "";
 let currentSource = "manual";
 let currentSalary = "";
+let joblyApiUrl = "";
 
 async function init() {
   $("appliedDate").value = todayIso();
 
-  const { apiUrl } = await chrome.storage.sync.get(["apiUrl", "apiKey"]);
+  const { apiUrl } = await chrome.storage.sync.get(["apiUrl"]);
+  joblyApiUrl = apiUrl || "";
 
-  if (!apiUrl) {
+  const session = await JoblyAuth.getStoredSession();
+
+  if (!joblyApiUrl || !session) {
     $("setupNotice").style.display = "block";
     $("save").disabled = true;
   }
@@ -57,12 +61,16 @@ function setStatus(msg, isErr) {
 }
 
 async function save() {
-  const { apiUrl, apiKey } = await chrome.storage.sync.get([
-    "apiUrl",
-    "apiKey",
-  ]);
-  if (!apiUrl) {
+  if (!joblyApiUrl) {
     setStatus("Set your Jobly URL in Options first.", true);
+    return;
+  }
+
+  const accessToken = await JoblyAuth.getValidAccessToken(joblyApiUrl);
+  if (!accessToken) {
+    setStatus("Sign in from Options first.", true);
+    $("setupNotice").style.display = "block";
+    $("save").disabled = true;
     return;
   }
 
@@ -89,11 +97,11 @@ async function save() {
   setStatus("Saving...");
 
   try {
-    const res = await fetch(`${apiUrl.replace(/\/$/, "")}/api/capture`, {
+    const res = await fetch(`${joblyApiUrl.replace(/\/$/, "")}/api/capture`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+        Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(body),
     });

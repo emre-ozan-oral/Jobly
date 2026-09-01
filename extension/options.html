@@ -14,6 +14,12 @@
       h1 {
         font-size: 18px;
       }
+      h2 {
+        font-size: 14px;
+        margin-top: 28px;
+        border-top: 1px solid #e4e4e7;
+        padding-top: 20px;
+      }
       label {
         display: block;
         font-size: 13px;
@@ -39,7 +45,15 @@
         font-size: 14px;
         cursor: pointer;
       }
-      #status {
+      button.secondary {
+        background: #3f3f46;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      #urlStatus,
+      #authStatus {
         margin-top: 12px;
         font-size: 13px;
       }
@@ -47,21 +61,42 @@
         font-size: 12px;
         color: #71717a;
       }
+      #signedInPanel {
+        display: none;
+      }
+      #signedInPanel p {
+        font-size: 13px;
+      }
     </style>
   </head>
   <body>
     <h1>Jobly extension settings</h1>
-    <p class="hint">
-      Sign in to your Jobly dashboard and copy your personal token from the
-      Extension Setup page (under Settings).
-    </p>
+
     <label>Jobly URL</label>
     <input id="apiUrl" placeholder="http://localhost:3000" />
-    <label>Personal API token</label>
-    <input id="apiKey" placeholder="paste your token here" />
-    <button id="save">Save</button>
-    <button id="test" style="background:#3f3f46">Test connection</button>
-    <div id="status"></div>
+    <p class="hint">Where your Jobly app is running - local dev URL, or your deployed Vercel URL.</p>
+    <button id="saveUrl" class="secondary">Save URL</button>
+    <button id="testUrl" class="secondary">Test connection</button>
+    <div id="urlStatus"></div>
+
+    <div id="signInPanel">
+      <h2>Sign in</h2>
+      <p class="hint">Use the same email and password as your Jobly dashboard - the extension links straight to your account, no token to copy.</p>
+      <label>Email</label>
+      <input id="email" type="email" placeholder="you@example.com" />
+      <label>Password</label>
+      <input id="password" type="password" placeholder="Password" />
+      <button id="signIn">Sign in</button>
+      <div id="authStatus"></div>
+    </div>
+
+    <div id="signedInPanel">
+      <h2>Account</h2>
+      <p>Signed in as <strong id="signedInEmail"></strong></p>
+      <button id="signOut" class="secondary">Sign out</button>
+    </div>
+
+    <script src="auth.js"></script>
     <script src="options.js"></script>
   </body>
 </html>

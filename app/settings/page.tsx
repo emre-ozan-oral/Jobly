@@ -41,18 +41,7 @@ export default async function SettingsPage() {
 
       <div className="mt-6 space-y-4 rounded-lg bg-white p-5 shadow-sm ring-1 ring-zinc-200">
         <div>
-          <h2 className="font-medium">1. Your personal API token</h2>
-          <p className="mt-1 text-sm text-zinc-600">
-            This identifies your account to the extension - anyone with this
-            token can add jobs to your list, so treat it like a password.
-          </p>
-          <div className="mt-2">
-            <TokenPanel initialToken={token} />
-          </div>
-        </div>
-
-        <div>
-          <h2 className="font-medium">2. Load the extension</h2>
+          <h2 className="font-medium">1. Load the extension</h2>
           <p className="mt-1 text-sm text-zinc-600">
             In Chrome, go to <code>chrome://extensions</code>, enable
             &ldquo;Developer mode&rdquo;, click &ldquo;Load unpacked&rdquo;, and select the{" "}
@@ -61,22 +50,37 @@ export default async function SettingsPage() {
         </div>
 
         <div>
-          <h2 className="font-medium">3. Configure it</h2>
+          <h2 className="font-medium">2. Sign in</h2>
           <p className="mt-1 text-sm text-zinc-600">
-            Click the Jobly extension icon → Options, and set the Jobly URL
-            (e.g. <code>http://localhost:3000</code> or your deployed URL) and
-            paste the token from step 1.
+            Click the Jobly extension icon → Options. Set the Jobly URL
+            (e.g. <code>http://localhost:3000</code> or your deployed URL),
+            then sign in with the same email and password you use here — the
+            extension links straight to your account, nothing to copy or
+            paste.
           </p>
         </div>
 
         <div>
-          <h2 className="font-medium">4. Capture jobs</h2>
+          <h2 className="font-medium">3. Capture jobs</h2>
           <p className="mt-1 text-sm text-zinc-600">
             Open a job posting on LinkedIn, Greenhouse, Lever, or Workday,
             click the Jobly extension icon, review the auto-filled fields,
             and click Save. Jobs saved this way land in your account -
             signing in as someone else won&apos;t see them.
           </p>
+        </div>
+
+        <div>
+          <h2 className="font-medium">Advanced: personal API token</h2>
+          <p className="mt-1 text-sm text-zinc-600">
+            The extension doesn&apos;t need this anymore, but it&apos;s here if
+            you&apos;re scripting against the API directly — it doesn&apos;t
+            expire the way a signed-in session does. Anyone with this token
+            can add jobs to your account, so treat it like a password.
+          </p>
+          <div className="mt-2">
+            <TokenPanel initialToken={token} />
+          </div>
         </div>
       </div>
     </div>

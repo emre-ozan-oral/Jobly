@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Save to Jobly</title>
+    <style>
+      body {
+        width: 320px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        margin: 0;
+        padding: 14px;
+        color: #18181b;
+      }
+      h1 {
+        font-size: 14px;
+        margin: 0 0 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      h1 a {
+        font-size: 11px;
+        color: #71717a;
+        text-decoration: none;
+      }
+      label {
+        display: block;
+        font-size: 11px;
+        color: #71717a;
+        margin-top: 8px;
+        margin-bottom: 2px;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 6px 8px;
+        font-size: 12px;
+        border: 1px solid #d4d4d8;
+        border-radius: 6px;
+        font-family: inherit;
+      }
+      button {
+        width: 100%;
+        margin-top: 12px;
+        padding: 8px;
+        background: #18181b;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      #status {
+        margin-top: 8px;
+        font-size: 12px;
+      }
+      #status.ok {
+        color: #15803d;
+      }
+      #status.err {
+        color: #b91c1c;
+      }
+      #setupNotice {
+        font-size: 12px;
+        color: #71717a;
+      }
+      #setupNotice a {
+        color: #18181b;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Save to Jobly <a href="options.html" target="_blank" id="optionsLink">Options</a></h1>
+    <div id="setupNotice" style="display:none">
+      Set your Jobly URL and API key in
+      <a href="options.html" target="_blank">Options</a> first.
+    </div>
+    <div id="form">
+      <label>Job title</label>
+      <input id="title" />
+      <label>Company</label>
+      <input id="company" />
+      <label>Job link (optional)</label>
+      <input id="jobUrl" type="url" placeholder="Defaults to this tab's URL" />
+      <label>Location</label>
+      <input id="location" />
+      <label>Applied on</label>
+      <input id="appliedDate" type="date" />
+      <label>Status</label>
+      <select id="jobStatus">
+        <option value="applied">Applied</option>
+        <option value="saved">Saved</option>
+        <option value="interviewing">Interviewing</option>
+        <option value="offer">Offer</option>
+        <option value="rejected">Rejected</option>
+        <option value="withdrawn">Withdrawn</option>
+      </select>
+      <button id="save">Save to Jobly</button>
+      <div id="statusMsg"></div>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>

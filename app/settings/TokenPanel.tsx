@@ -33,12 +33,12 @@ export default function TokenPanel({ initialToken }: { initialToken: string }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <code className="flex-1 truncate rounded-md bg-zinc-100 px-3 py-2 text-xs">
+        <code className="flex-1 truncate rounded-md bg-zinc-100 px-3 py-2 text-xs dark:bg-zinc-800 dark:text-zinc-300">
           {token}
         </code>
         <button
           onClick={copy}
-          className="rounded-md bg-zinc-900 px-3 py-2 text-xs font-medium text-white hover:bg-zinc-800"
+          className="rounded-md bg-zinc-900 px-3 py-2 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
         >
           {copied ? "Copied ✓" : "Copy"}
         </button>
@@ -46,7 +46,7 @@ export default function TokenPanel({ initialToken }: { initialToken: string }) {
       <button
         onClick={rotate}
         disabled={rotating}
-        className="text-xs text-zinc-500 hover:text-red-600 disabled:opacity-50"
+        className="text-xs text-zinc-500 hover:text-red-600 disabled:opacity-50 dark:text-zinc-400 dark:hover:text-red-400"
       >
         {rotating ? "Rotating..." : "Regenerate token"}
       </button>

@@ -1,8 +1,18 @@
 @import "tailwindcss";
 
+/* Class-based dark mode: toggled by adding/removing `dark` on <html>
+   (see ThemeToggle + the inline script in layout.tsx), independent of the
+   OS `prefers-color-scheme` setting. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #fafafa;
   --foreground: #18181b;
+}
+
+.dark {
+  --background: #09090b;
+  --foreground: #f4f4f5;
 }
 
 @theme inline {

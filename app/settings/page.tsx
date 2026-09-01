@@ -32,26 +32,26 @@ export default async function SettingsPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6">
-      <Link href="/" className="text-sm text-zinc-500 hover:underline">
+      <Link href="/" className="text-sm text-zinc-500 hover:underline dark:text-zinc-400">
         ← Back
       </Link>
       <h1 className="mt-2 text-2xl font-semibold tracking-tight">
         Extension setup
       </h1>
 
-      <div className="mt-6 space-y-4 rounded-lg bg-white p-5 shadow-sm ring-1 ring-zinc-200">
+      <div className="mt-6 space-y-4 rounded-lg bg-white p-5 shadow-sm ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-800">
         <div>
           <h2 className="font-medium">1. Load the extension</h2>
-          <p className="mt-1 text-sm text-zinc-600">
-            In Chrome, go to <code>chrome://extensions</code>, enable
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            In Chrome, go to <code className="dark:text-zinc-300">chrome://extensions</code>, enable
             &ldquo;Developer mode&rdquo;, click &ldquo;Load unpacked&rdquo;, and select the{" "}
-            <code>extension/</code> folder from this project.
+            <code className="dark:text-zinc-300">extension/</code> folder from this project.
           </p>
         </div>
 
         <div>
           <h2 className="font-medium">2. Sign in</h2>
-          <p className="mt-1 text-sm text-zinc-600">
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             Click the Jobly extension icon → Options, then sign in with the
             same email and password you use here — the extension links
             straight to your account, nothing to copy or paste, and nothing
@@ -62,7 +62,7 @@ export default async function SettingsPage() {
 
         <div>
           <h2 className="font-medium">3. Capture jobs</h2>
-          <p className="mt-1 text-sm text-zinc-600">
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             Open a job posting on LinkedIn, Greenhouse, Lever, or Workday,
             click the Jobly extension icon, review the auto-filled fields,
             and click Save. Jobs saved this way land in your account -
@@ -72,7 +72,7 @@ export default async function SettingsPage() {
 
         <div>
           <h2 className="font-medium">Advanced: personal API token</h2>
-          <p className="mt-1 text-sm text-zinc-600">
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             The extension doesn&apos;t need this anymore, but it&apos;s here if
             you&apos;re scripting against the API directly — it doesn&apos;t
             expire the way a signed-in session does. Anyone with this token

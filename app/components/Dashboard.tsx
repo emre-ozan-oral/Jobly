@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Job, JobStatus } from "@/lib/types";
@@ -281,6 +281,43 @@ export default function Dashboard({
   const [filter, setFilter] = useState<JobStatus | "all">("all");
   const [q, setQ] = useState("");
   const [showAdd, setShowAdd] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const refreshingRef = useRef(false);
+
+  // The extension saves jobs by hitting the API directly, not through this
+  // page, so this tab's `jobs` state goes stale the moment you switch away
+  // to apply somewhere else. Re-pull the list whenever the tab regains
+  // focus/visibility so the dashboard is current without a manual reload.
+  const refreshJobs = useCallback(async () => {
+    if (refreshingRef.current) return;
+    refreshingRef.current = true;
+    setRefreshing(true);
+    try {
+      const res = await fetch("/api/jobs");
+      if (res.ok) {
+        const data = await res.json();
+        setJobs(data.jobs);
+      }
+    } catch {
+      // Offline or a blip - the next focus/visibility event will retry.
+    } finally {
+      refreshingRef.current = false;
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    function onFocusOrVisible() {
+      if (document.visibilityState === "hidden") return;
+      refreshJobs();
+    }
+    window.addEventListener("focus", onFocusOrVisible);
+    document.addEventListener("visibilitychange", onFocusOrVisible);
+    return () => {
+      window.removeEventListener("focus", onFocusOrVisible);
+      document.removeEventListener("visibilitychange", onFocusOrVisible);
+    };
+  }, [refreshJobs]);
 
   async function signOut() {
     const supabase = createClient();
@@ -343,6 +380,14 @@ export default function Dashboard({
           >
             Extension setup
           </a>
+          <button
+            onClick={refreshJobs}
+            disabled={refreshing}
+            className="text-sm text-zinc-500 hover:text-zinc-700 hover:underline disabled:opacity-50"
+            title="Refresh (the list also updates automatically when you switch back to this tab)"
+          >
+            {refreshing ? "Refreshing…" : "Refresh"}
+          </button>
           <button
             onClick={signOut}
             className="text-sm text-zinc-500 hover:text-zinc-700 hover:underline"

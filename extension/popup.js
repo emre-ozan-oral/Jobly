@@ -12,12 +12,13 @@ let joblyApiUrl = "";
 async function init() {
   $("appliedDate").value = todayIso();
 
-  const { apiUrl } = await chrome.storage.sync.get(["apiUrl"]);
-  joblyApiUrl = apiUrl || "";
+  // The Jobly URL always has a default (the deployed app), so signing in
+  // is the only thing that actually gates saving.
+  joblyApiUrl = await JoblyConfig.getApiUrl();
 
   const session = await JoblyAuth.getStoredSession();
 
-  if (!joblyApiUrl || !session) {
+  if (!session) {
     $("setupNotice").style.display = "block";
     $("save").disabled = true;
   }
@@ -61,11 +62,6 @@ function setStatus(msg, isErr) {
 }
 
 async function save() {
-  if (!joblyApiUrl) {
-    setStatus("Set your Jobly URL in Options first.", true);
-    return;
-  }
-
   const accessToken = await JoblyAuth.getValidAccessToken(joblyApiUrl);
   if (!accessToken) {
     setStatus("Sign in from Options first.", true);

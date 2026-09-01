@@ -81,13 +81,18 @@ description for Jobly to auto-fill fields from.
 
 1. Go to `chrome://extensions`, enable **Developer mode**, click **Load
    unpacked**, and select the `extension/` folder.
-2. Click the Jobly icon in your toolbar → **Options**. Set the **Jobly
-   URL** (`http://localhost:3000` for local use, or your deployed URL) and
-   click **Save URL**.
-3. Under **Sign in**, enter the same email and password you use on the
-   dashboard, and click **Sign in**. That's it — no token to find or paste.
-4. Click **Test connection** any time to confirm the extension can reach
-   Jobly and that your session is valid.
+2. Click the Jobly icon in your toolbar → **Options**. Enter the same
+   email and password you use on the dashboard, and click **Sign in**.
+   That's it — no URL to set, no token to find or paste. The extension
+   already points at the deployed Jobly app.
+3. Click **Test connection** (under **Advanced: Jobly URL**) any time to
+   confirm the extension can reach Jobly and that your session is valid.
+
+The extension ships with the deployed URL baked in as its default, so
+there's nothing to configure out of the box. If you're running Jobly
+locally instead (`npm run dev`) or on a different deployment, open
+**Advanced: Jobly URL** in Options, enter that URL, and click **Save
+URL** — leave it blank to fall back to the default again.
 
 The extension keeps you signed in the way any app does: it holds a session
 that refreshes itself automatically in the background, so you won't need to
@@ -129,9 +134,11 @@ see the comments in `extension/content.js` for how.
 4. In Supabase, under **Authentication → URL Configuration**, add your
    Vercel deployment's URL as a **Redirect URL** (and as the **Site URL**)
    so auth emails link back to the right place.
-5. Update the extension's Options page with the deployed URL and click
-   **Save URL** — your sign-in session carries over, no need to sign in
-   again unless you explicitly sign out.
+5. If you deploy your own fork to a different URL than
+   `https://jobly-puce.vercel.app`, update `DEFAULT_API_URL` in
+   `extension/config.js` before loading the extension, so it points at
+   your deployment out of the box. (Or leave it as-is and set your URL
+   once under Options → **Advanced: Jobly URL**.)
 
 ## Troubleshooting
 

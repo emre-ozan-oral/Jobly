@@ -67,17 +67,23 @@
       #signedInPanel p {
         font-size: 13px;
       }
+      details#advancedSection {
+        margin-top: 28px;
+        border-top: 1px solid #e4e4e7;
+        padding-top: 20px;
+      }
+      details#advancedSection summary {
+        font-size: 13px;
+        color: #52525b;
+        cursor: pointer;
+      }
+      details#advancedSection label {
+        margin-top: 14px;
+      }
     </style>
   </head>
   <body>
     <h1>Jobly extension settings</h1>
-
-    <label>Jobly URL</label>
-    <input id="apiUrl" placeholder="http://localhost:3000" />
-    <p class="hint">Where your Jobly app is running - local dev URL, or your deployed Vercel URL.</p>
-    <button id="saveUrl" class="secondary">Save URL</button>
-    <button id="testUrl" class="secondary">Test connection</button>
-    <div id="urlStatus"></div>
 
     <div id="signInPanel">
       <h2>Sign in</h2>
@@ -96,6 +102,17 @@
       <button id="signOut" class="secondary">Sign out</button>
     </div>
 
+    <details id="advancedSection">
+      <summary>Advanced: Jobly URL</summary>
+      <p class="hint">Jobly points at <code id="defaultUrlHint"></code> by default. Only change this if you're running a local dev server or a different deployment.</p>
+      <label>Jobly URL</label>
+      <input id="apiUrl" placeholder="http://localhost:3000" />
+      <button id="saveUrl" class="secondary">Save URL</button>
+      <button id="testUrl" class="secondary">Test connection</button>
+      <div id="urlStatus"></div>
+    </details>
+
+    <script src="config.js"></script>
     <script src="auth.js"></script>
     <script src="options.js"></script>
   </body>

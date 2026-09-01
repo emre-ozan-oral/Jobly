@@ -1,24 +1,28 @@
 const $ = (id) => document.getElementById(id);
 
 async function loadUrl() {
+  $("defaultUrlHint").textContent = JoblyConfig.DEFAULT_API_URL;
   const { apiUrl } = await chrome.storage.sync.get(["apiUrl"]);
+  // Leave the field blank (rather than pre-filled with the default) so
+  // it's visually obvious this is an override, not something required.
+  $("apiUrl").placeholder = JoblyConfig.DEFAULT_API_URL;
   if (apiUrl) $("apiUrl").value = apiUrl;
 }
 
 async function saveUrl() {
   const apiUrl = $("apiUrl").value.trim().replace(/\/$/, "");
-  await chrome.storage.sync.set({ apiUrl });
+  if (apiUrl) {
+    await chrome.storage.sync.set({ apiUrl });
+  } else {
+    // Blank means "use the default" - clear any stored override.
+    await chrome.storage.sync.remove(["apiUrl"]);
+  }
   $("urlStatus").textContent = "Saved ✓";
   $("urlStatus").style.color = "#15803d";
 }
 
 async function testUrl() {
-  const apiUrl = $("apiUrl").value.trim().replace(/\/$/, "");
-  if (!apiUrl) {
-    $("urlStatus").textContent = "Enter a Jobly URL first.";
-    $("urlStatus").style.color = "#b91c1c";
-    return;
-  }
+  const apiUrl = await JoblyConfig.getApiUrl();
   $("urlStatus").textContent = "Testing...";
   $("urlStatus").style.color = "#18181b";
   try {
@@ -56,14 +60,9 @@ async function refreshAuthUI() {
 }
 
 async function signIn() {
-  const apiUrl = $("apiUrl").value.trim().replace(/\/$/, "");
+  const apiUrl = await JoblyConfig.getApiUrl();
   const email = $("email").value.trim();
   const password = $("password").value;
-  if (!apiUrl) {
-    $("authStatus").textContent = "Set your Jobly URL above first.";
-    $("authStatus").style.color = "#b91c1c";
-    return;
-  }
   if (!email || !password) {
     $("authStatus").textContent = "Enter your email and password.";
     $("authStatus").style.color = "#b91c1c";
@@ -74,7 +73,6 @@ async function signIn() {
   $("authStatus").textContent = "Signing in...";
   $("authStatus").style.color = "#18181b";
   try {
-    await chrome.storage.sync.set({ apiUrl });
     await JoblyAuth.signIn(apiUrl, email, password);
     $("password").value = "";
     $("authStatus").textContent = "";

@@ -52,11 +52,11 @@ export default async function SettingsPage() {
         <div>
           <h2 className="font-medium">2. Sign in</h2>
           <p className="mt-1 text-sm text-zinc-600">
-            Click the Jobly extension icon → Options. Set the Jobly URL
-            (e.g. <code>http://localhost:3000</code> or your deployed URL),
-            then sign in with the same email and password you use here — the
-            extension links straight to your account, nothing to copy or
-            paste.
+            Click the Jobly extension icon → Options, then sign in with the
+            same email and password you use here — the extension links
+            straight to your account, nothing to copy or paste, and nothing
+            to configure. (Running Jobly locally instead? Set your URL under
+            Options → &ldquo;Advanced: Jobly URL&rdquo;.)
           </p>
         </div>
 

@@ -272,9 +272,11 @@ function AddJobModal({
 export default function Dashboard({
   initialJobs,
   userEmail,
+  userId,
 }: {
   initialJobs: Job[];
   userEmail: string;
+  userId: string;
 }) {
   const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>(initialJobs);
@@ -283,27 +285,39 @@ export default function Dashboard({
   const [showAdd, setShowAdd] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const refreshingRef = useRef(false);
+  const refreshAgainRef = useRef(false);
 
   // The extension saves jobs by hitting the API directly, not through this
-  // page, so this tab's `jobs` state goes stale the moment you switch away
-  // to apply somewhere else. Re-pull the list whenever the tab regains
-  // focus/visibility so the dashboard is current without a manual reload.
+  // page, so this tab's `jobs` state would otherwise go stale the moment
+  // you switch away to apply somewhere else. Re-pull the list on demand -
+  // called both by the realtime subscription below (so a new application
+  // shows up right away, even without switching tabs) and as a fallback
+  // whenever the tab regains focus/visibility, in case a realtime event
+  // was missed (e.g. the socket was briefly disconnected).
   const refreshJobs = useCallback(async () => {
-    if (refreshingRef.current) return;
+    if (refreshingRef.current) {
+      // A fetch is already in flight - make sure another one runs right
+      // after it finishes, so an event that arrives mid-fetch isn't lost.
+      refreshAgainRef.current = true;
+      return;
+    }
     refreshingRef.current = true;
     setRefreshing(true);
-    try {
-      const res = await fetch("/api/jobs");
-      if (res.ok) {
-        const data = await res.json();
-        setJobs(data.jobs);
+    do {
+      refreshAgainRef.current = false;
+      try {
+        const res = await fetch("/api/jobs");
+        if (res.ok) {
+          const data = await res.json();
+          setJobs(data.jobs);
+        }
+      } catch {
+        // Offline or a blip - the next focus/visibility event or realtime
+        // message will retry.
       }
-    } catch {
-      // Offline or a blip - the next focus/visibility event will retry.
-    } finally {
-      refreshingRef.current = false;
-      setRefreshing(false);
-    }
+    } while (refreshAgainRef.current);
+    refreshingRef.current = false;
+    setRefreshing(false);
   }, []);
 
   useEffect(() => {
@@ -318,6 +332,32 @@ export default function Dashboard({
       document.removeEventListener("visibilitychange", onFocusOrVisible);
     };
   }, [refreshJobs]);
+
+  // Live updates: the extension writes straight to the database, so a
+  // Postgres change notification is what makes a newly-applied job appear
+  // immediately instead of waiting for you to switch back to this tab.
+  // Requires the `jobs` table to be added to the `supabase_realtime`
+  // publication (supabase/schema.sql does this).
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`jobs-changes-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "jobs",
+          filter: `user_id=eq.${userId}`,
+        },
+        () => refreshJobs()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, refreshJobs]);
 
   async function signOut() {
     const supabase = createClient();

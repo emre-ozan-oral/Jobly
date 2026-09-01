@@ -13,6 +13,11 @@ to deploy on Vercel.
 - **One-click capture from the browser** — the Chrome extension reads the
   job posting on whatever page you're viewing (LinkedIn included) and
   pre-fills a title/company/location for you to review and save.
+- **Shows up on the dashboard immediately** — a job saved by the extension
+  appears on an already-open dashboard tab right away, live, with no
+  manual refresh needed (via a realtime subscription; falls back to
+  re-checking whenever the tab regains focus, in case that connection
+  ever drops).
 - **Paste-to-parse fallback** — for any site the extension can't read,
   paste the job text into the dashboard and Jobly extracts what it can.
 - **Accounts** — email/password sign-up and sign-in via Supabase Auth.
@@ -64,6 +69,12 @@ fields to your Jobly instance with one click.
    Sign In / Providers → Email**, turn off "Confirm email" so new accounts
    don't need to click an email link before they can sign in. Turn it back
    on before sharing this with anyone else.
+
+If your project already existed before this feature was added and the
+dashboard isn't updating live, re-run `supabase/schema.sql` in the SQL
+Editor — it's safe to re-run, and the bottom of the `jobs` section adds the
+table to Supabase's realtime publication (this is what the dashboard
+subscribes to for live updates).
 
 ## Running it locally
 

@@ -14,5 +14,7 @@ export default async function Home() {
   if (!user) redirect("/login");
 
   const jobs = await listJobs(supabase, user.id);
-  return <Dashboard initialJobs={jobs} userEmail={user.email ?? ""} />;
+  return (
+    <Dashboard initialJobs={jobs} userEmail={user.email ?? ""} userId={user.id} />
+  );
 }

@@ -65,6 +65,22 @@ create trigger jobs_set_updated_at
   before update on public.jobs
   for each row execute function public.set_updated_at();
 
+-- Let the dashboard subscribe to live changes on this table (used so a job
+-- saved by the extension shows up on an already-open dashboard tab
+-- immediately, with no manual refresh). Guarded so re-running this file
+-- doesn't error if the table's already in the publication.
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'jobs'
+  ) then
+    alter publication supabase_realtime add table public.jobs;
+  end if;
+end $$;
+
 -- ---------------------------------------------------------------------
 -- api_tokens
 -- One personal token per user, used by the browser extension to

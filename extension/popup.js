@@ -69,8 +69,22 @@ async function init() {
 
   if (session) {
     const { profile } = await cvPromise;
+    lastJobTechStack = jobTechStack;
+    lastJobExperience = jobExperience;
     renderCvMatch(jobTechStack, jobExperience, profile);
   }
+}
+
+let lastJobTechStack = [];
+let lastJobExperience = null;
+
+async function refreshCvMatch() {
+  await JoblyCv.invalidate();
+  const el = $("cvMatch");
+  el.innerHTML = `<span class="dim">Refreshing...</span>`;
+  el.style.display = "block";
+  const { profile } = await JoblyCv.getProfile(joblyApiUrl);
+  renderCvMatch(lastJobTechStack, lastJobExperience, profile);
 }
 
 function escapeHtml(str) {
@@ -135,8 +149,15 @@ function renderCvMatch(jobTechStack, jobExperience, profile) {
   const el = $("cvMatch");
 
   if (!profile) {
-    el.innerHTML = `<a class="cvLink" href="${joblyApiUrl}/settings" target="_blank">Add your CV</a> in Jobly to see a match score for this job.`;
+    el.innerHTML = `<a class="cvLink" href="${joblyApiUrl}/settings" target="_blank">Add your CV</a> in Jobly to see a match score for this job. Already added it? <a class="cvLink" href="#" id="cvRefreshLink">Refresh</a>.`;
     el.style.display = "block";
+    const refreshLink = document.getElementById("cvRefreshLink");
+    if (refreshLink) {
+      refreshLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        refreshCvMatch();
+      });
+    }
     return;
   }
 

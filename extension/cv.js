@@ -17,13 +17,20 @@ const JoblyCv = (() => {
   }
 
   async function setCached(profile) {
+    if (!profile) {
+      // Don't cache "no CV yet" - the moment the user uploads one, the
+      // next popup open should see it, not a stale negative result for
+      // up to TTL_MS. Only a *found* profile is worth caching.
+      await chrome.storage.local.remove([CACHE_KEY]);
+      return;
+    }
     await chrome.storage.local.set({
       [CACHE_KEY]: { profile, fetchedAt: Date.now() },
     });
   }
 
   function isFresh(cache) {
-    return !!cache && Date.now() - cache.fetchedAt < TTL_MS;
+    return !!cache?.profile && Date.now() - cache.fetchedAt < TTL_MS;
   }
 
   /**
@@ -47,9 +54,12 @@ const JoblyCv = (() => {
       const profile = data.profile || null;
       await setCached(profile);
       return { profile, stale: false };
-    } catch {
+    } catch (err) {
       // Offline, or the request failed - fall back to whatever's cached
-      // (even if stale) rather than showing nothing.
+      // (even if stale) rather than showing nothing. Logged (not
+      // swallowed) so a real auth/API failure is visible in the popup's
+      // devtools console instead of silently looking like "no CV".
+      console.warn("Jobly: couldn't fetch CV profile", err);
       return { profile: cache?.profile ?? null, stale: !!cache };
     }
   }

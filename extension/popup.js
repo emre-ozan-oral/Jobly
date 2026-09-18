@@ -43,6 +43,7 @@ async function init() {
       currentUrl = d.url || currentUrl;
       currentSource = d.source || "manual";
       currentSalary = d.salary || "";
+      renderInsights(d.techStack, d.experience, d.seniority);
     }
   } catch {
     // content script not present on this page (e.g. chrome:// pages) - fine,
@@ -53,6 +54,34 @@ async function init() {
   // "blank" means "use this tab's URL", shown as a placeholder rather than
   // a value so it's obvious the field can just be left alone.
   $("jobUrl").placeholder = currentUrl || "Defaults to this tab's URL";
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  })[c]);
+}
+
+// Purely local, instant (no LLM/network call) - just reflects what
+// JoblyInsights already extracted synchronously in the content script.
+function renderInsights(techStack, experience, seniority) {
+  const hasData = (techStack && techStack.length) || experience || seniority;
+  if (!hasData) return;
+
+  const metaParts = [];
+  if (experience) metaParts.push(`<b>Experience:</b> ${escapeHtml(experience)}`);
+  if (seniority) metaParts.push(`<b>Level:</b> ${escapeHtml(seniority)}`);
+  $("insightsMeta").innerHTML = metaParts.join(" &nbsp;·&nbsp; ");
+
+  $("techRow").innerHTML = (techStack || [])
+    .map((t) => `<span class="chip">${escapeHtml(t)}</span>`)
+    .join("");
+
+  $("insights").style.display = "block";
 }
 
 function setStatus(msg, isErr) {

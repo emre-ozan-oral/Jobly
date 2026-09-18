@@ -172,6 +172,15 @@ function extract() {
 
   if (!result) return null;
 
+  // Local, non-LLM insights (tech stack / experience / seniority) computed
+  // from the whole visible page text - synchronous, no network call, so
+  // this adds no perceptible delay when the popup opens.
+  const bodyText = document.body?.innerText || "";
+  const insights =
+    typeof JoblyInsights !== "undefined"
+      ? JoblyInsights.analyze(bodyText)
+      : { techStack: [], experience: null, seniority: null };
+
   return {
     title: result.title || document.title,
     company: result.company,
@@ -179,6 +188,9 @@ function extract() {
     salary: result.salary,
     url: location.href,
     source: result.source || host,
+    techStack: insights.techStack,
+    experience: insights.experience,
+    seniority: insights.seniority,
   };
 }
 

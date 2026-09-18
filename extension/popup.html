@@ -75,6 +75,33 @@
       #setupNotice a {
         color: #18181b;
       }
+      #insights {
+        margin-top: 10px;
+        background: #f4f4f5;
+        border-radius: 8px;
+        padding: 8px 10px;
+      }
+      #insightsMeta {
+        font-size: 11px;
+        color: #3f3f46;
+        line-height: 1.5;
+      }
+      #insightsMeta b {
+        color: #18181b;
+      }
+      #techRow {
+        margin-top: 4px;
+      }
+      .chip {
+        display: inline-block;
+        background: #e4e4e7;
+        color: #27272a;
+        border-radius: 999px;
+        padding: 2px 8px;
+        margin: 2px 4px 0 0;
+        font-size: 10px;
+        font-weight: 500;
+      }
     </style>
   </head>
   <body>
@@ -92,6 +119,10 @@
       <input id="jobUrl" type="url" placeholder="Defaults to this tab's URL" />
       <label>Location</label>
       <input id="location" />
+      <div id="insights" style="display:none">
+        <div id="insightsMeta"></div>
+        <div id="techRow"></div>
+      </div>
       <label>Applied on</label>
       <input id="appliedDate" type="date" />
       <label>Status</label>

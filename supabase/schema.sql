@@ -104,3 +104,46 @@ create policy "api_tokens_select_own" on public.api_tokens
 -- /api/tokens using the service-role key (so a user can't mint a token
 -- for someone else's account by forging a request) - no client-facing
 -- write policies are needed.
+
+-- ---------------------------------------------------------------------
+-- cv_profile
+-- One row per user: the CV they uploaded, plus what was extracted from
+-- it (skills) and what they typed in themselves (years_experience,
+-- target_seniority - not reliably extractable from free text, so these
+-- are user-supplied rather than guessed). Used to compute a local,
+-- no-LLM match score against each job's extracted techStack/experience
+-- in the extension popup.
+-- ---------------------------------------------------------------------
+create table if not exists public.cv_profile (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  file_name text,
+  raw_text text,
+  skills text[] not null default '{}',
+  years_experience numeric,
+  target_seniority text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.cv_profile enable row level security;
+
+drop policy if exists "cv_profile_select_own" on public.cv_profile;
+create policy "cv_profile_select_own" on public.cv_profile
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "cv_profile_insert_own" on public.cv_profile;
+create policy "cv_profile_insert_own" on public.cv_profile
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "cv_profile_update_own" on public.cv_profile;
+create policy "cv_profile_update_own" on public.cv_profile
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "cv_profile_delete_own" on public.cv_profile;
+create policy "cv_profile_delete_own" on public.cv_profile
+  for delete using (auth.uid() = user_id);
+
+drop trigger if exists cv_profile_set_updated_at on public.cv_profile;
+create trigger cv_profile_set_updated_at
+  before update on public.cv_profile
+  for each row execute function public.set_updated_at();

@@ -3,7 +3,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCvProfile } from "@/lib/cv";
 import TokenPanel from "./TokenPanel";
+import CvPanel from "./CvPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +31,7 @@ export default async function SettingsPage() {
   if (!user) redirect("/login");
 
   const token = await getOrCreateToken(user.id);
+  const cvProfile = (await getCvProfile(supabase, user.id)) ?? null;
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6">
@@ -82,6 +85,11 @@ export default async function SettingsPage() {
             <TokenPanel initialToken={token} />
           </div>
         </div>
+      </div>
+
+      <div className="mt-6 space-y-4 rounded-lg bg-white p-5 shadow-sm ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-800">
+        <h2 className="font-medium">Add your CV</h2>
+        <CvPanel initialProfile={cvProfile} />
       </div>
     </div>
   );

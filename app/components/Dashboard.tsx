@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { Job, JobStatus } from "@/lib/types";
 import { JOB_STATUSES } from "@/lib/types";
@@ -554,18 +555,18 @@ export default function Dashboard({
           <span className="hidden text-sm text-zinc-400 sm:inline dark:text-zinc-500">
             {userEmail}
           </span>
-          <a
+          <Link
             href="/cv"
             className="text-sm text-zinc-500 hover:text-zinc-700 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
           >
             My CV
-          </a>
-          <a
+          </Link>
+          <Link
             href="/settings"
             className="text-sm text-zinc-500 hover:text-zinc-700 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
           >
             Extension setup
-          </a>
+          </Link>
           <button
             onClick={signOut}
             className="text-sm text-zinc-500 hover:text-zinc-700 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"

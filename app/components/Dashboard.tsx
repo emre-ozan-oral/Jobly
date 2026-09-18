@@ -555,6 +555,12 @@ export default function Dashboard({
             {userEmail}
           </span>
           <a
+            href="/cv"
+            className="text-sm text-zinc-500 hover:text-zinc-700 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
+          >
+            My CV
+          </a>
+          <a
             href="/settings"
             className="text-sm text-zinc-500 hover:text-zinc-700 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
           >

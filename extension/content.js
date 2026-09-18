@@ -50,25 +50,44 @@ function extractLinkedInCompanyLink() {
   return text(document.querySelector('a[href*="/company/"]'));
 }
 
-// The location line reads like "Istanbul, Istanbul, Türkiye (On-site)" -
-// scan the visible page text near the top for that shape instead of
-// depending on any class name.
-function extractLinkedInLocation() {
-  const bodyText = document.body?.innerText || "";
-  const lines = bodyText
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean);
-  const locationLine = /^.{3,100}\((On-site|Hybrid|Remote)\)$/i;
-  for (const line of lines.slice(0, 80)) {
-    if (locationLine.test(line)) {
+// The location line reads like "Istanbul, Istanbul, Türkiye (On-site)".
+const LOCATION_LINE_RE = /^.{3,100}\((On-site|Hybrid|Remote)\)$/i;
+
+function firstLocationLine(text) {
+  const lines = (text || "").split("\n").map((l) => l.trim()).filter(Boolean);
+  for (const line of lines) {
+    if (LOCATION_LINE_RE.test(line)) {
       // Strip a leading "Company · " / "Company • " bit if present, since
       // the company is already captured separately.
-      const afterSeparator = line.split(/\s*[·•]\s*/).pop();
-      return afterSeparator || line;
+      return line.split(/\s*[·•]\s*/).pop() || line;
     }
   }
   return undefined;
+}
+
+// Scan the visible page text for a location-shaped line - but scoped to
+// the currently OPEN posting, not the whole page. On a LinkedIn job
+// search page the left-hand job-list sidebar (other postings) sits
+// before the open posting's own detail pane in document order, so a
+// whole-page top-down scan can grab a different job's location. Instead,
+// walk up from the company link (which - unlike the sidebar cards -
+// reliably points at the open posting's own /company/ page) through a
+// few ancestor levels, checking each container's own text first, so the
+// nearest/smallest container that has a location line wins.
+function extractLinkedInLocation() {
+  const companyLink = document.querySelector('a[href*="/company/"]');
+  if (companyLink) {
+    let node = companyLink.parentElement;
+    for (let i = 0; i < 8 && node; i++) {
+      const found = firstLocationLine(node.innerText);
+      if (found) return found;
+      node = node.parentElement;
+    }
+  }
+
+  // Fallback for when there's no company link to anchor to (e.g. a
+  // single job page rather than the search results layout).
+  return firstLocationLine((document.body?.innerText || "").split("\n").slice(0, 80).join("\n"));
 }
 
 function extractLinkedIn() {

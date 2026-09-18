@@ -143,27 +143,41 @@ function parseRequiredYears(experienceStr) {
   return m ? Number(m[1]) : null;
 }
 
+// Small "Refresh" control shown in the corner of the CV match panel at
+// all times (not just when there's no CV) - editing your skills/years on
+// the Jobly Settings page doesn't push to the extension, so this is how
+// you pull the update in without waiting out the cache TTL.
+function refreshLinkHtml() {
+  return `<a class="cvLink cvRefresh" href="#" id="cvRefreshLink">Refresh</a>`;
+}
+
+function attachCvRefreshLink() {
+  const link = document.getElementById("cvRefreshLink");
+  if (link) {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      refreshCvMatch();
+    });
+  }
+}
+
 // Purely local once the CV profile is in hand (fetched/cached by
 // JoblyCv) - no LLM, no extra network call beyond that one profile fetch.
 function renderCvMatch(jobTechStack, jobExperience, profile) {
   const el = $("cvMatch");
 
   if (!profile) {
-    el.innerHTML = `<a class="cvLink" href="${joblyApiUrl}/settings" target="_blank">Add your CV</a> in Jobly to see a match score for this job. Already added it? <a class="cvLink" href="#" id="cvRefreshLink">Refresh</a>.`;
+    el.innerHTML = `<a class="cvLink" href="${joblyApiUrl}/cv" target="_blank">Add your CV</a> in Jobly to see a match score for this job. Already added it? ${refreshLinkHtml()}.`;
     el.style.display = "block";
-    const refreshLink = document.getElementById("cvRefreshLink");
-    if (refreshLink) {
-      refreshLink.addEventListener("click", (e) => {
-        e.preventDefault();
-        refreshCvMatch();
-      });
-    }
+    attachCvRefreshLink();
     return;
   }
 
   const parts = [];
   const { matched, missing } = computeSkillMatch(jobTechStack, profile.skills);
   const total = jobTechStack.length;
+
+  parts.push(`<div style="float:right">${refreshLinkHtml()}</div>`);
 
   if (total > 0) {
     const score = Math.round((matched.length / total) * 100);
@@ -183,11 +197,11 @@ function renderCvMatch(jobTechStack, jobExperience, profile) {
     );
   }
 
-  if (!parts.length && !matched.length && !missing.length) {
+  if (total === 0 && requiredYears == null) {
     parts.push(`<span class="dim">No skills or experience requirement detected on this posting.</span>`);
   }
 
-  let html = parts.join("");
+  let html = `<div style="overflow:hidden">${parts.join("")}</div>`;
   if (matched.length) {
     html += `<div class="chipRow">${matched.map((s) => `<span class="chip chipGood">${escapeHtml(s)}</span>`).join("")}</div>`;
   }
@@ -197,6 +211,7 @@ function renderCvMatch(jobTechStack, jobExperience, profile) {
 
   el.innerHTML = html;
   el.style.display = "block";
+  attachCvRefreshLink();
 }
 
 function setStatus(msg, isErr) {

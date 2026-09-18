@@ -9,7 +9,7 @@
 
 const JoblyCv = (() => {
   const CACHE_KEY = "cvProfileCache";
-  const TTL_MS = 6 * 60 * 60 * 1000; // 6 hours - a CV rarely changes mid-session
+  const TTL_MS = 30 * 60 * 1000; // 30 min - short enough that an edit on the web app shows up soon without thinking about it; the on-demand Refresh link covers "right now"
 
   async function getCached() {
     const { [CACHE_KEY]: cache } = await chrome.storage.local.get([CACHE_KEY]);

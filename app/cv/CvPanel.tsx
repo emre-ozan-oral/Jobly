@@ -121,14 +121,6 @@ export default function CvPanel({
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        Upload your CV once and the extension will show a match score for
-        every job posting - skills it shares with the posting, skills the
-        posting wants that aren&apos;t on your CV, and whether the posting&apos;s
-        experience requirement fits yours. Everything is matched locally by
-        keyword, not by an LLM, so it&apos;s instant.
-      </p>
-
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <label className="block text-xs text-zinc-500 dark:text-zinc-400">
